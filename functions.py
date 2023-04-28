@@ -1,4 +1,6 @@
 import os
+import shutil
+
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -38,15 +40,18 @@ def handle_paths(title: str) -> (str, str):
     user_root: str = os.path.expanduser('~')
     downloads_path: str = os.path.join(os.getcwd(), 'downloads')
     mangas_path: str = os.path.join(user_root, 'Documentos', 'mangás')
-    destination_path: str = os.path.join(user_root, 'Documentos', 'mangás')
+    local_chapter_folder: str = os.path.join(downloads_path, title)
+    final_chapter_file: str = os.path.join(mangas_path, title + '.zip')
 
-    if not os.path.isdir(mangas_path):
-        os.mkdir(mangas_path)
+    if os.path.isdir(local_chapter_folder):
+        shutil.rmtree(local_chapter_folder)
 
-    if not os.path.isdir(os.path.join(downloads_path)):
-        os.mkdir(os.path.join(downloads_path))
+    os.mkdir(local_chapter_folder)
 
-    if not os.path.isdir(title):
-        os.mkdir(title)
+    if not os.path.isdir(downloads_path):
+        os.mkdir(downloads_path)
 
-    return os.path.join(downloads_path, title), destination_path
+    if os.path.isfile(final_chapter_file):
+        os.remove(final_chapter_file)
+
+    return local_chapter_folder, mangas_path

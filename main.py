@@ -6,14 +6,13 @@ from tqdm import tqdm
 
 url: str = "https://po2scans.com"
 chapter_code: str = str(input("Cole aqui a código do capítulo:\n"))
+chapter_path: str
+destination_path: str
 
 title_element, chapter_element, images_element = \
     get_elements(url=url, chapter_code=chapter_code)
 
 title_text = title_element.accessible_name + " - " + chapter_element.text.split('-')[0].strip()
-
-chapter_path: str
-destination_path: str
 chapter_path, destination_path = handle_paths(title=title_text)
 
 pbar = tqdm(enumerate(images_element), desc='Baixando arquivos',
@@ -29,3 +28,4 @@ for index, image in pbar:
 
 shutil.make_archive(chapter_path, 'zip', chapter_path)
 shutil.move(chapter_path + '.zip', destination_path)
+print("Finalizado")
