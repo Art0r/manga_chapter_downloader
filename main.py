@@ -1,4 +1,4 @@
-from DownloadManga import DownloadManga
+from src.DownloadManga import DownloadManga
 
 if __name__ == "__main__":
     chapter_code: str = str(input("Digite o código do capítulo:\n"))
