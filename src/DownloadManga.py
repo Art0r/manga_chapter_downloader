@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.remote.webelement import WebElement
-from DownloadMangaDataclass import DownloadMangaDataclass
+from src.DownloadMangaDataclass import DownloadMangaDataclass
 
 
 class DownloadManga:
