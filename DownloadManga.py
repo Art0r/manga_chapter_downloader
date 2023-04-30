@@ -39,7 +39,7 @@ class DownloadManga:
     def move_files_to_destination(self) -> None:
         try:
             shutil.make_archive(self.local_downloads_chapter, 'zip', self.local_downloads_chapter)
-            shutil.move(self.local_downloads_chapter + '.zip', DownloadMangaDataclass.CHAPTERS_DESTINATION)
+            shutil.move(self.local_downloads_chapter + '.zip', self.chapters_destination_file)
         except FileNotFoundError or FileExistsError as e:
             print("Erro ao mover para os paths: {0}".format(e.args[0]))
 
@@ -62,6 +62,9 @@ class DownloadManga:
         try:
             if not os.path.isdir(DownloadMangaDataclass.LOCAL_DOWNLOADS):
                 os.mkdir(DownloadMangaDataclass.LOCAL_DOWNLOADS)
+
+            if not os.path.isdir(DownloadMangaDataclass.CHAPTERS_DESTINATION):
+                os.mkdir(DownloadMangaDataclass.CHAPTERS_DESTINATION)
 
             if os.path.isdir(self.local_downloads_chapter):
                 shutil.rmtree(self.local_downloads_chapter)
