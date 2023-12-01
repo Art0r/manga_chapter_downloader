@@ -31,6 +31,9 @@ class DownloadMangaData:
     # the manga manga title how is displayed in the url
     manga_title: str
 
+    def __str__(self) -> str:
+        return self.manga_title
+
 
     def __init__(self, sourceType: SourcesEnum) -> None:
         self.sourceType = sourceType
