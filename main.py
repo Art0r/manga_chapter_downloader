@@ -1,18 +1,18 @@
-from src.DownloadManga import DownloadManga
-from src.DownloadMangaData import DownloadMangaData, SourcesEnum
-from src.utils.verify_source import verify_source
+from flask import Flask, request, Response
+from src.utils.download_from_source import Urls, downloadFromSource
 
-if __name__ == "__main__":
-    url: str = str(input("Digite o código do capítulo:\n"))
-    downloadMangaData = verify_source(url=url)
-    if (downloadMangaData.sourceType is SourcesEnum.CHAPMANGANATO):
-        splitUrl: list[str] = url.split('/')
-        downloadMangaData.chapter = splitUrl[4]
-        downloadMangaData.manga_title = splitUrl[3]
-    if (downloadMangaData.sourceType is SourcesEnum.MANGAREAD):
-        splitUrl: list[str] = url.split('/')
-        downloadMangaData.chapter = splitUrl[5]
-        downloadMangaData.manga_title = splitUrl[4]
-    downloadManga = DownloadManga(mangaData=downloadMangaData)
-    downloadManga.execute()
-    print("Download de {0} completo".format(downloadManga))
+app = Flask(__name__)
+
+@app.route('/', methods=['POST'])
+def index():
+
+    body = request.get_json()
+
+    urls = Urls(**body)
+
+    downloadFromSource(urls=urls, i=len(urls.sources) - 1)
+
+    return Response(status=204)
+
+if __name__ == '__main__':
+    app.run(debug=True)

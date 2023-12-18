@@ -11,11 +11,11 @@ class DownloadMangaData:
     # Root user folder. For Linux ~, for Windows C:\Users\THIS_USER
     ROOT_USER_FOLDER: str = os.path.expanduser('~')
     
-    # Path for the Chromedriver
-    CHROMEDRIVER: str = os.path.join(os.getcwd(), "chromedriver")
+    # Folder where the generated files will be stored
+    TEMP_FOLDER: str = os.path.join(os.getcwd(), 'temp')
     
     # Where the image downloads will be stored and the data will be manipulated
-    LOCAL_DOWNLOADS: str = os.path.join(os.getcwd(), 'downloads')
+    LOCAL_DOWNLOADS: str = os.path.join(os.getcwd(), 'temp', 'downloads')
     
     # Where the final file will be moved to
     CHAPTERS_DESTINATION: str = os.path.join(ROOT_USER_FOLDER, 'Documentos')

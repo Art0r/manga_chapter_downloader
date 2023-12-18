@@ -10,6 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.remote.webelement import WebElement
+from webdriver_manager import chrome
+from src.utils.slugify import slugify
 from src.DownloadMangaData import DownloadMangaData, SourcesEnum
 from src.utils.zipping import zip_folder
 
@@ -39,22 +41,27 @@ class DownloadManga:
         self.move_files_to_destination()
 
         # wiping all the remaining data
-        # self.clean_up()
+        self.clean_up()
 
     def clean_up(self):
         try:
             # removing folder and downloaded content
-            shutil.rmtree(self.mangaData.LOCAL_DOWNLOADS)
+            shutil.rmtree(self.mangaData.TEMP_FOLDER)
 
         except OSError as e:
             print(f"Error: {self.mangaData.LOCAL_DOWNLOADS} - {e}")
 
 
     def move_files_to_destination(self) -> None:
-        
+
+        self.mangaData.manga_title = slugify(self.mangaData.manga_title)
+
         # setting file destination 
-        zip_file: str = os.path.join(os.getcwd(), 
+        zip_file: str = os.path.join(self.mangaData.TEMP_FOLDER, 
                                      self.mangaData.manga_title) + '.zip'
+
+        if os.path.isfile(zip_file): os.remove(zip_file)
+
         try:
 
             # zipping content from folder where the images were downloaded  
@@ -99,10 +106,12 @@ class DownloadManga:
         try:
 
             # To avoid errors with path, creating the local folder if not exists
+            if not os.path.isdir(self.mangaData.TEMP_FOLDER):
+                os.mkdir(self.mangaData.TEMP_FOLDER)
+
             if not os.path.isdir(self.mangaData.LOCAL_DOWNLOADS):
                 os.mkdir(self.mangaData.LOCAL_DOWNLOADS)
 
-            # To avoid errors with path, creating the destination folder if not exists
             if not os.path.isdir(self.mangaData.CHAPTERS_DESTINATION):
                 os.mkdir(self.mangaData.CHAPTERS_DESTINATION)
 
@@ -118,6 +127,13 @@ class DownloadManga:
                 # Images from CHAPMANGANATO
                 self.images_element: list[WebElement] = self.wait.until(ec.presence_of_all_elements_located(
                     (By.XPATH, "//*[@class='container-chapter-reader']/img")))
+                
+                # Element from where we're extracting the title
+                title_element: WebElement = self.wait.until(ec.presence_of_element_located(
+                    (By.XPATH, "//*[@class='panel-chapter-info-top']/h1")))
+
+                # Assigning title to its variable
+                self.mangaData.manga_title = title_element.text
             
             # Only executed if url is from MANGAREAD
             if self.mangaData.sourceType is SourcesEnum.MANGAREAD:
@@ -145,9 +161,9 @@ class DownloadManga:
             options = Options()
 
             # This option will make chrome to execute without appearing
-            # options.add_argument('--headless')
+            options.add_argument('--headless')
 
-            service: Service = Service(executable_path=self.mangaData.CHROMEDRIVER)
+            service: Service = Service(executable_path=chrome.ChromeDriverManager().install())
 
             driver: Chrome = Chrome(service=service, options=options)
 
