@@ -9,8 +9,8 @@ class Urls:
     def __init__(self, sources: list[str]) -> None:
         self.sources = sources
 
-def downloadFromSource(urls: Urls, i: int):
-    if i < 0: return
+def downloadFromSource(urls: Urls, i: int, files: list[str] = []):
+    if i < 0: return files
     
     thisSource = urls.sources[i]
     downloadMangaData = verify_source(url=thisSource)
@@ -23,6 +23,7 @@ def downloadFromSource(urls: Urls, i: int):
         downloadMangaData.chapter = splitUrl[5]
         downloadMangaData.manga_title = splitUrl[4]
     downloadManga = DownloadManga(mangaData=downloadMangaData)
-    downloadManga.execute()
     
-    return downloadFromSource(urls=urls, i=i-1)
+    files.append(downloadManga.execute())
+    
+    return downloadFromSource(urls=urls, i=i-1, files=files)

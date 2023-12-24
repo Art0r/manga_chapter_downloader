@@ -2,6 +2,7 @@ import os
 import shutil
 import requests
 import selenium.common
+import datetime
 from tqdm import tqdm
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
@@ -33,26 +34,28 @@ class DownloadManga:
         # creating/removing folders to avoid path errors while processing ifo
         self._handle_paths()
 
-    def execute(self):
+    def execute(self) -> str | None:
         # fetch image resource from gotten from src then writtting it into a file 
         self.download_files()
 
         # zipping images into one file then moving it to its destination
-        self.move_files_to_destination()
+        files = self.move_files_to_destination()
 
-        # wiping all the remaining data
-        self.clean_up()
+        # # wiping all the remaining data
+        # self.clean_up()
+
+        return files
 
     def clean_up(self):
         try:
             # removing folder and downloaded content
-            shutil.rmtree(self.mangaData.TEMP_FOLDER)
+            shutil.rmtree(self.mangaData.LOCAL_DOWNLOADS)
 
         except OSError as e:
             print(f"Error: {self.mangaData.LOCAL_DOWNLOADS} - {e}")
 
 
-    def move_files_to_destination(self) -> None:
+    def move_files_to_destination(self) -> None | str:
 
         self.mangaData.manga_title = slugify(self.mangaData.manga_title)
 
@@ -68,9 +71,11 @@ class DownloadManga:
             zip_folder(
                 folder_path=self.mangaData.LOCAL_DOWNLOADS,  
                 zip_path=zip_file)
+
+            # wiping all the remaining data
+            self.clean_up()
             
-            # moving files to its final destination 
-            shutil.move(zip_file, self.mangaData.CHAPTERS_DESTINATION)
+            return zip_file
         
         except FileNotFoundError or FileExistsError as e:
             print("Erro ao mover para os paths: {0}".format(e.args[0]))
@@ -112,8 +117,6 @@ class DownloadManga:
             if not os.path.isdir(self.mangaData.LOCAL_DOWNLOADS):
                 os.mkdir(self.mangaData.LOCAL_DOWNLOADS)
 
-            if not os.path.isdir(self.mangaData.CHAPTERS_DESTINATION):
-                os.mkdir(self.mangaData.CHAPTERS_DESTINATION)
 
         except FileNotFoundError or FileExistsError as e:
             print("Erro ao obter os paths: {0}".format(e.args[0]))
