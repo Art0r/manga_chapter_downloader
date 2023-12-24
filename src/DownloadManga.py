@@ -34,17 +34,15 @@ class DownloadManga:
         # creating/removing folders to avoid path errors while processing ifo
         self._handle_paths()
 
-    def execute(self) -> str | None:
+    def execute(self):
         # fetch image resource from gotten from src then writtting it into a file 
         self.download_files()
 
         # zipping images into one file then moving it to its destination
-        files = self.move_files_to_destination()
+        self.move_files_to_destination()
 
         # # wiping all the remaining data
         # self.clean_up()
-
-        return files
 
     def clean_up(self):
         try:

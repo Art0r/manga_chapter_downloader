@@ -1,6 +1,22 @@
 import os
 import zipfile
 
+def list_files(directory):
+    with os.scandir(directory) as entries:
+        files = [entry.name for entry in entries if entry.is_file()]
+    return files
+
+def zip_to_result(final_file: str):
+
+    with zipfile.ZipFile(final_file, 'w', allowZip64=True) as zipf:
+
+        for file in list_files(os.path.join(os.getcwd(), "temp")):
+            
+            file_path = os.path.join(os.getcwd(), 'temp', file)
+            
+            arcname = os.path.relpath(file_path, os.path.join(os.getcwd(), 'temp'))
+            
+            zipf.write(file_path, arcname)
 
 def zip_folder(folder_path, zip_path):
     with zipfile.ZipFile(zip_path, 'w', allowZip64=True) as zipf:
