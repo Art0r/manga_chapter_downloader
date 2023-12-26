@@ -1,5 +1,9 @@
 # MANGA CHAPTER DOWNLOADER
 
+## Install/Running
+> pyinstaller --name=manga_chapter_downloader --onefile main.py
+pyinstaller manga_chapter_downloader.spec
+
 ## About
 > This is a tool written in python using selenium to identify and 
 download images from a website then join into a zip file

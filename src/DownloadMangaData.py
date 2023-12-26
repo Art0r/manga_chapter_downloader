@@ -6,15 +6,6 @@ class SourcesEnum(Enum):
     MANGAREAD: str = "https://www.mangaread.org/"
 
 class DownloadMangaData:
-    # Constants
-    
-    # Folder where the generated files will be stored
-    TEMP_FOLDER: str = os.path.join(os.getcwd(), 'temp')
-    
-    # Where the image downloads will be stored and the data will be manipulated
-    LOCAL_DOWNLOADS: str = os.path.join(os.getcwd(), 'temp', 'downloads')
-    
-
     # Variables 
 
     # Source enum, mainly used to control conditions

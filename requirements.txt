@@ -8,6 +8,7 @@ click==8.1.7
 colorama==0.4.6
 exceptiongroup==1.1.1
 Flask==3.0.0
+gunicorn==21.2.0
 h11==0.14.0
 idna==3.4
 itsdangerous==2.1.2

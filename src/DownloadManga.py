@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager import chrome
+from src.utils.config import AppConfig
 from src.utils.slugify import slugify
 from src.DownloadMangaData import DownloadMangaData, SourcesEnum
 from src.utils.zipping import zip_folder
@@ -31,7 +32,7 @@ class DownloadManga:
         # getting the html element from wich the images will be extracted
         self._get_elements()
 
-        # creating/removing folders to avoid path errors while processing ifo
+        # creating/removing folders to avoid path errors while processing files
         self._handle_paths()
 
     def execute(self):
@@ -47,10 +48,10 @@ class DownloadManga:
     def clean_up(self):
         try:
             # removing folder and downloaded content
-            shutil.rmtree(self.mangaData.LOCAL_DOWNLOADS)
+            shutil.rmtree(AppConfig.local_downloads())
 
         except OSError as e:
-            print(f"Error: {self.mangaData.LOCAL_DOWNLOADS} - {e}")
+            print(f"Error: {AppConfig.local_downloads()} - {e}")
 
 
     def move_files_to_destination(self) -> None | str:
@@ -58,8 +59,8 @@ class DownloadManga:
         self.mangaData.manga_title = slugify(self.mangaData.manga_title)
 
         # setting file destination 
-        zip_file: str = os.path.join(self.mangaData.TEMP_FOLDER, 
-                                     self.mangaData.manga_title) + '.zip'
+        zip_file: str = os.path.join(AppConfig.temp_folder(), 
+                                     f"{self.mangaData.manga_title}{AppConfig.extension()}")
 
         if os.path.isfile(zip_file): os.remove(zip_file)
 
@@ -67,7 +68,7 @@ class DownloadManga:
 
             # zipping content from folder where the images were downloaded  
             zip_folder(
-                folder_path=self.mangaData.LOCAL_DOWNLOADS,  
+                folder_path=AppConfig.local_downloads(),  
                 zip_path=zip_file)
 
             # wiping all the remaining data
@@ -100,7 +101,7 @@ class DownloadManga:
             extension: str = '.jpg'
             
             # writing image data to file
-            file = open(os.path.join(self.mangaData.LOCAL_DOWNLOADS, str(index) + extension), 'wb')
+            file = open(os.path.join(AppConfig.local_downloads(), str(index) + extension), 'wb')
             file.write(res.content)
             file.close()
 
@@ -109,11 +110,11 @@ class DownloadManga:
         try:
 
             # To avoid errors with path, creating the local folder if not exists
-            if not os.path.isdir(self.mangaData.TEMP_FOLDER):
-                os.mkdir(self.mangaData.TEMP_FOLDER)
+            if not os.path.isdir(AppConfig.temp_folder()):
+                os.mkdir(AppConfig.temp_folder())
 
-            if not os.path.isdir(self.mangaData.LOCAL_DOWNLOADS):
-                os.mkdir(self.mangaData.LOCAL_DOWNLOADS)
+            if not os.path.isdir(AppConfig.local_downloads()):
+                os.mkdir(AppConfig.local_downloads())
 
 
         except FileNotFoundError or FileExistsError as e:
@@ -162,7 +163,9 @@ class DownloadManga:
             options = Options()
 
             # This option will make chrome to execute without appearing
-            options.add_argument('--headless')
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
 
             service: Service = Service(executable_path=chrome.ChromeDriverManager().install())
 
@@ -182,9 +185,9 @@ class DownloadManga:
                     + self.mangaData.manga_title + "/" + self.mangaData.chapter
 
             # raise exception if url is not currently supported
-            if full_url is None:
-                raise Exception({"err": "url not supported"})
-
+            if full_url is None or len(full_url) == 0:
+                raise Exception("url not supported")
+  
             # executing url with driver
             driver.get(full_url)
 
@@ -192,10 +195,10 @@ class DownloadManga:
             driver.fullscreen_window()
             driver.execute_script("document.documentElement.requestFullscreen();")
             print("Setup finalizado")
-            
+
             # setting how much time it should wait to the component to appear until timeout  
             self.wait = WebDriverWait(driver, 10)
 
         except selenium.common.exceptions.WebDriverException as e:
-            print("Setup do Selenium falhou: {0}".format(e.args[0]))
+            print("Setup do Selenium falhou: {0}".format(e.args))
             exit()
