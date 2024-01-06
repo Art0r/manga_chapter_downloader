@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+import shutil
 
 @dataclass
 class AppConfig:
@@ -13,3 +14,11 @@ class AppConfig:
 
     @staticmethod
     def extension() -> str: return '.cbz'
+
+    def clean_up():
+        try:
+            # removing folder and downloaded content
+            shutil.rmtree(AppConfig.local_downloads())
+
+        except OSError as e:
+            print(f"Error: {AppConfig.local_downloads()} - {e}")

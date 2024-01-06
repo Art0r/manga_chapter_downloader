@@ -1,9 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
 import os
-import shutil
+import time
 import requests
 import selenium.common
-import datetime
-from tqdm import tqdm
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -25,7 +24,8 @@ class DownloadManga:
     def __init__(self, mangaData: DownloadMangaData) -> None:
 
         self.mangaData = mangaData
-        
+
+    def setup(self):
         # setting up selenium elements, opening chrome and setting wait
         self._setup_selenium()
 
@@ -37,22 +37,18 @@ class DownloadManga:
 
     def execute(self):
         # fetch image resource from gotten from src then writtting it into a file 
-        self.download_files()
+        
+        start_time = time.time()
+        self.download_files_concurrently(self.images_element.__len__() - 1)
+        end_time = time.time()
+
+        print("download lasted: {0} seconds".format(end_time - start_time))
 
         # zipping images into one file then moving it to its destination
         self.move_files_to_destination()
 
         # # wiping all the remaining data
         # self.clean_up()
-
-    def clean_up(self):
-        try:
-            # removing folder and downloaded content
-            shutil.rmtree(AppConfig.local_downloads())
-
-        except OSError as e:
-            print(f"Error: {AppConfig.local_downloads()} - {e}")
-
 
     def move_files_to_destination(self) -> None | str:
 
@@ -70,41 +66,45 @@ class DownloadManga:
             zip_folder(
                 folder_path=AppConfig.local_downloads(),  
                 zip_path=zip_file)
-
-            # wiping all the remaining data
-            self.clean_up()
             
             return zip_file
         
         except FileNotFoundError or FileExistsError as e:
             print("Erro ao mover para os paths: {0}".format(e.args[0]))
-
-    def download_files(self) -> None:
-
-        # setting progress bar
-        pbar = tqdm(enumerate(self.images_element), desc='Baixando arquivos',
-                    ncols=len(self.images_element), ascii=True, unit='imagens')
-
-        for index, image in pbar:
         
-            # getting source from html current image element 
-            src: str = image.get_attribute('src')
-            try:
+    def download_files(self, i: int) -> None:
+        if i < 0: return
 
-                # making request for image data
-                res = requests.get(src, allow_redirects=True)
+        print("Started {0} page {1}".format(self.mangaData.manga_title, i + 1))
 
-            except requests.exceptions.RequestException as e:
-                print("Erro ao fazer os downloads: {0}".format(e.args[0]))
-                exit()
+        # getting source from html current image element 
+        src: str = self.images_element[i].get_attribute('src')
+        try:
 
-            extension: str = '.jpg'
-            
-            # writing image data to file
-            file = open(os.path.join(AppConfig.local_downloads(), str(index) + extension), 'wb')
-            file.write(res.content)
-            file.close()
+            # making request for image data
+            res = requests.get(src, allow_redirects=True)
 
+        except requests.exceptions.RequestException as e:
+            print("Erro ao fazer os downloads: {0}".format(e.args[0]))
+            exit()
+
+        extension: str = '.jpg'
+        
+        # writing image data to file
+        file = open(os.path.join(AppConfig.local_downloads(), str(i) + extension), 'wb')
+        file.write(res.content)
+        file.close()
+
+        print("Finished {0} page {1}".format(self.mangaData.manga_title, i + 1))     
+        
+        return i
+
+    def download_files_concurrently(self, i: int) -> None:
+        with ThreadPoolExecutor() as executor:
+            executor.map(self.download_files, range(i - 1))
+
+        # If you want to handle the results, you can do so here
+        print("All downloads completed.")
     
     def _handle_paths(self) -> None:
         try:
