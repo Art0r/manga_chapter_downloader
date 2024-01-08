@@ -1,3 +1,4 @@
+import asyncio
 from src.DownloadManga import DownloadManga
 from src.DownloadMangaData import SourcesEnum
 from src.utils.verify_source import verify_source
@@ -16,10 +17,6 @@ def downloadFromSource(urls: Urls, i: int):
 
     thisSource = urls.sources[i]
     downloadMangaData = verify_source(url=thisSource)
-    if (downloadMangaData.sourceType is SourcesEnum.CHAPMANGANATO):
-        splitUrl: list[str] = thisSource.split('/')
-        downloadMangaData.chapter = splitUrl[4]
-        downloadMangaData.manga_title = splitUrl[3]
     if (downloadMangaData.sourceType is SourcesEnum.MANGAREAD):
         splitUrl: list[str] = thisSource.split('/')
         downloadMangaData.chapter = splitUrl[5]
@@ -27,7 +24,7 @@ def downloadFromSource(urls: Urls, i: int):
 
     downloadManga = DownloadManga(mangaData=downloadMangaData)
 
-    downloadManga.setup()
-    downloadManga.execute()
+    asyncio.run(downloadManga.setup())
+    asyncio.run(downloadManga.execute())
 
     return downloadFromSource(urls=urls, i=i - 1)

@@ -25,32 +25,28 @@ class DownloadManga:
 
         self.mangaData = mangaData
 
-    def setup(self):
+    async def setup(self):
         # setting up selenium elements, opening chrome and setting wait
-        self._setup_selenium()
+        await self._setup_selenium()
 
         # getting the html element from wich the images will be extracted
-        self._get_elements()
+        await self._get_elements()
 
         # creating/removing folders to avoid path errors while processing files
-        self._handle_paths()
+        await self._handle_paths()
 
-    def execute(self):
+    async def execute(self):
         # fetch image resource from gotten from src then writtting it into a file 
         
-        start_time = time.time()
-        self.download_files_concurrently(self.images_element.__len__() - 1)
-        end_time = time.time()
-
-        print("download lasted: {0} seconds".format(end_time - start_time))
+        await self.download_files_concurrently(self.images_element.__len__() - 1)
 
         # zipping images into one file then moving it to its destination
-        self.move_files_to_destination()
+        await self.move_files_to_destination()
 
         # # wiping all the remaining data
         # self.clean_up()
 
-    def move_files_to_destination(self) -> None | str:
+    async def move_files_to_destination(self) -> None | str:
 
         self.mangaData.manga_title = slugify(self.mangaData.manga_title)
 
@@ -75,8 +71,6 @@ class DownloadManga:
     def download_files(self, i: int) -> None:
         if i < 0: return
 
-        print("Started {0} page {1}".format(self.mangaData.manga_title, i + 1))
-
         # getting source from html current image element 
         src: str = self.images_element[i].get_attribute('src')
         try:
@@ -95,18 +89,16 @@ class DownloadManga:
         file.write(res.content)
         file.close()
 
-        print("Finished {0} page {1}".format(self.mangaData.manga_title, i + 1))     
-        
         return i
 
-    def download_files_concurrently(self, i: int) -> None:
+    async def download_files_concurrently(self, i: int) -> None:
         with ThreadPoolExecutor() as executor:
             executor.map(self.download_files, range(i - 1))
 
         # If you want to handle the results, you can do so here
         print("All downloads completed.")
     
-    def _handle_paths(self) -> None:
+    async def _handle_paths(self) -> None:
         try:
 
             # To avoid errors with path, creating the local folder if not exists
@@ -122,21 +114,8 @@ class DownloadManga:
             exit()
 
 
-    def _get_elements(self) -> None:
+    async def _get_elements(self) -> None:
         try:
-            # Only executed if url is from CHAPMANGANATO
-            if self.mangaData.sourceType is SourcesEnum.CHAPMANGANATO:
-                # Images from CHAPMANGANATO
-                self.images_element: list[WebElement] = self.wait.until(ec.presence_of_all_elements_located(
-                    (By.XPATH, "//*[@class='container-chapter-reader']/img")))
-                
-                # Element from where we're extracting the title
-                title_element: WebElement = self.wait.until(ec.presence_of_element_located(
-                    (By.XPATH, "//*[@class='panel-chapter-info-top']/h1")))
-
-                # Assigning title to its variable
-                self.mangaData.manga_title = title_element.text
-            
             # Only executed if url is from MANGAREAD
             if self.mangaData.sourceType is SourcesEnum.MANGAREAD:
 
@@ -158,7 +137,7 @@ class DownloadManga:
             print("Ocorreu um erro ao obter os elementos html: {0}".format(e.args[0]))
             exit()
 
-    def _setup_selenium(self) -> None:
+    async def _setup_selenium(self) -> None:
         try:
             options = Options()
 
@@ -174,11 +153,6 @@ class DownloadManga:
             # url to be executed by the driver, will be filled. If not raise exeception
             full_url: str = None 
 
-            # Only executed if url is from CHAPMANGANATO
-            if self.mangaData.sourceType is SourcesEnum.CHAPMANGANATO:
-                full_url: str = self.mangaData.sourceType.value \
-                    + self.mangaData.manga_title + "/" + self.mangaData.chapter
-            
             # Only executed if url is from MANGAREAD
             if self.mangaData.sourceType is SourcesEnum.MANGAREAD:
                 full_url: str = self.mangaData.sourceType.value + "manga/" \
