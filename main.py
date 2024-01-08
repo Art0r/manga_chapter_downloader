@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import shutil
 import time
@@ -27,7 +28,7 @@ def index():
         downloadFromSource(urls=urls, i=len(urls.sources) - 1)
         end = time.time()
 
-        print('All steps lasted: {0}'.format(end - start))
+        logging.info('All steps lasted: {0}'.format(end - start))
 
         response: Response = make_response()
         response.mimetype = 'application/zip'      

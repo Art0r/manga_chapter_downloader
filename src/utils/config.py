@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 import os
 import shutil
 
@@ -21,4 +22,4 @@ class AppConfig:
             shutil.rmtree(AppConfig.local_downloads())
 
         except OSError as e:
-            print(f"Error: {AppConfig.local_downloads()} - {e}")
+            logging.error(f"Error: {AppConfig.local_downloads()} - {e}")

@@ -1,8 +1,21 @@
 # MANGA CHAPTER DOWNLOADER
 
 ## Install/Running
-> pyinstaller --name=manga_chapter_downloader --onefile main.py
-pyinstaller manga_chapter_downloader.spec
+### Building docker image
+> docker build -t art0r/manga_chapter_downloader:prod-main .
+
+### Running docker image
+>docker run \
+        -p 8000:80 \
+        -e FLASK_ENV=production \
+        art0r/manga_chapter_downloader:prod-main
+
+### Downloading file moving to destination
+> curl -o response.zip 'http://127.0.0.1:8000/' \
+--header 'Content-Type: application/json' \
+--data '{
+    "sources": [ < urls > ]
+}' && mv ./response.zip  /mnt/c/arthu/Documents
 
 ## About
 > This is a tool written in python using selenium to identify and 

@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+import logging
 import os
 import time
 import requests
@@ -66,7 +67,7 @@ class DownloadManga:
             return zip_file
         
         except FileNotFoundError or FileExistsError as e:
-            print("Erro ao mover para os paths: {0}".format(e.args[0]))
+            logging.error("Erro ao mover para os paths: {0}".format(e.args[0]))
         
     def download_files(self, i: int) -> None:
         if i < 0: return
@@ -79,7 +80,7 @@ class DownloadManga:
             res = requests.get(src, allow_redirects=True)
 
         except requests.exceptions.RequestException as e:
-            print("Erro ao fazer os downloads: {0}".format(e.args[0]))
+            logging.error("Erro ao fazer os downloads: {0}".format(e.args[0]))
             exit()
 
         extension: str = '.jpg'
@@ -95,8 +96,7 @@ class DownloadManga:
         with ThreadPoolExecutor() as executor:
             executor.map(self.download_files, range(i - 1))
 
-        # If you want to handle the results, you can do so here
-        print("All downloads completed.")
+        logging.info("All downloads completed.")
     
     async def _handle_paths(self) -> None:
         try:
@@ -110,7 +110,7 @@ class DownloadManga:
 
 
         except FileNotFoundError or FileExistsError as e:
-            print("Erro ao obter os paths: {0}".format(e.args[0]))
+            logging.error("Erro ao obter os paths: {0}".format(e.args[0]))
             exit()
 
 
@@ -134,7 +134,7 @@ class DownloadManga:
                 # self.mangaData.manga_title = self.images_element[0].accessible_name.split("page")[0].strip()
 
         except selenium.common.exceptions.ElementNotVisibleException as e:
-            print("Ocorreu um erro ao obter os elementos html: {0}".format(e.args[0]))
+            logging.error("Ocorreu um erro ao obter os elementos html: {0}".format(e.args[0]))
             exit()
 
     async def _setup_selenium(self) -> None:
@@ -168,11 +168,10 @@ class DownloadManga:
             # setting fullscreen to avoid responsive divergences 
             driver.fullscreen_window()
             driver.execute_script("document.documentElement.requestFullscreen();")
-            print("Setup finalizado")
 
             # setting how much time it should wait to the component to appear until timeout  
             self.wait = WebDriverWait(driver, 10)
 
         except selenium.common.exceptions.WebDriverException as e:
-            print("Setup do Selenium falhou: {0}".format(e.args))
+            logging.error("Setup do Selenium falhou: {0}".format(e.args))
             exit()
